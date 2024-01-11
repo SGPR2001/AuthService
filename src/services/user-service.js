@@ -16,6 +16,22 @@ class UserService {
       throw error;
     }
   }
+  async signIn(email,plainPassword) {
+    try {
+       const user=await this.userRepository.getByEmail(email)
+       const passwordsMatch=this.checkPassword(plainPassword,user.password)
+       if(!passwordsMatch){
+        console.log("Password doesn't match")
+        throw {error:'Incorrect password'}
+       }
+
+       const newJWT=this.createToken({email:user.email,id:user.id})
+       return newJWT;
+    } catch (error) {
+      console.log("Something went wrong in the sign in process");
+      throw error;
+    }
+  }
   createToken(user) {
     try {
       const result = jwt.sign(user, JWT_KEY, { expiresIn: "1d" });
@@ -35,9 +51,9 @@ class UserService {
     }
   }
 
-  checkPassword(userInputPlainPassword,encryptedPassword) {
+  checkPassword(userInputPlainPassword, encryptedPassword) {
     try {
-      return bcrypt.compareSync(userInputPlainPassword,encryptedPassword)
+      return bcrypt.compareSync(userInputPlainPassword, encryptedPassword);
     } catch (error) {
       console.log("Something went wrong in password comparison");
       throw error;
